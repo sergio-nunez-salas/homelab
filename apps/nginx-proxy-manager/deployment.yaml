@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: networking
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: npm-data
+  namespace: networking
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-client
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: npm-letsencrypt
+  namespace: networking
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-client
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-proxy-manager
+  namespace: networking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: npm
+  template:
+    metadata:
+      labels:
+        app: npm
+    spec:
+      containers:
+      - name: npm
+        image: jc21/nginx-proxy-manager:latest
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 81
+          name: admin
+        - containerPort: 443
+          name: https
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: letsencrypt
+          mountPath: /etc/letsencrypt
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: npm-data
+      - name: letsencrypt
+        persistentVolumeClaim:
+          claimName: npm-letsencrypt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-proxy-manager
+  namespace: networking
+spec:
+  selector:
+    app: npm
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  - name: admin
+    port: 81
+    targetPort: 81
+  - name: https
+    port: 443
+    targetPort: 443
+  type: ClusterIP
