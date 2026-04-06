@@ -18,3 +18,10 @@ rules:
 
   # No exigir "---" al inicio de cada fichero YAML
   document-start: disable
+
+  # Aceptar ambos estilos de indentacion en listas YAML:
+  #   containers:          containers:
+  #   - name: foo            - name: foo
+  # El primer estilo es el estandar en manifiestos de Kubernetes.
+  indentation:
+    indent-sequences: whatever
