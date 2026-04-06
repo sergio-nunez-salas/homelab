@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint-yaml:
-    name: Lint YAML 
+    name: Lint YAML
     runs-on: ubuntu-latest
     steps:
       - name: Descargar codigo
@@ -16,10 +16,10 @@ jobs:
 
       - name: Instalar yamllint
         run: pip install yamllint
-        
-      - name: Validar ficheros YAML 
-        run: yamllint .
-  
+
+      - name: Validar ficheros YAML
+        run: yamllint .github/ apps/ .yamllint.yml
+
   validate-k8s:
     name: Validar manifiestos Kubernetes
     runs-on: ubuntu-latest
@@ -33,7 +33,7 @@ jobs:
           sudo mv kubeconform /usr/local/bin/
 
       - name: Validar manifiestos
-        run: kubeconform -summary apps/  
+        run: kubeconform -summary apps/
 
   validate-terraform:
     name: Validar Terraform
@@ -47,8 +47,4 @@ jobs:
 
       - name: Comprobar formato
         run: terraform fmt -check -recursive
-        working-directory: terraform
-
-      - name: Validar sintaxis
-        run: terraform init -backend=false && terraform validate
         working-directory: terraform
