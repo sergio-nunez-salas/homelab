@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-yaml:
+    name: Lint YAML 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar yamllint
+        run: pip install yamllint
+        
+      - name: Validar ficheros YAML 
+        run: yamllint -s .
+  
+  validate-k8s:
+    name: Validar manifiestos Kubernetes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Validar manifiestos
+        run: kubeconform -summary apps/  
+
+  validate-terraform:
+    name: Validar Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Comprobar formato
+        run: terraform fmt -check -recursive
+        working-directory: terraform
+
+      - name: Validar sintaxis
+        run: terraform init -backend=false && terraform validate
+        working-directory: terraform

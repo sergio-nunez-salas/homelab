@@ -1,0 +1,57 @@
+---
+description: Contexto completo del proyecto homelab para todas las conversaciones
+alwaysApply: true
+---
+
+# Homelab - Contexto del proyecto
+
+## Propietario
+Sergio Nunez Salas. Junior en Telefonica Tech (proyecto Thanos, seguridad de red para BBVA). Objetivo: pivotar a Cloud Engineer / DevOps con salario 32-35k. Este homelab es su portfolio tecnico para el CV.
+
+## Hardware fisico (2 nodos Proxmox)
+- **PC principal**: Intel i5-10400F, 16GB DDR4, NVMe 250GB + HDD 1TB, GTX 1660 Ti, MSI MAG B460M Mortar WiFi
+- **Chuwi N100**: Intel N100, 8GB DDR5, SSD 512GB (nodo secundario, bajo consumo)
+
+## Maquinas virtuales en Proxmox
+| VM | SO | RAM | Cores | Extras | Funcion |
+|----|-----|-----|-------|--------|---------|
+| MASTER | Debian | 4GB | 4 | - | K3s control plane |
+| worker1 (IALAB) | Ubuntu | 8GB | 4 | GPU passthrough GTX 1660 | K3s worker |
+| worker2 | Debian | 2GB | 2 | - | K3s worker ligero |
+| TrueNAS | TrueNAS Scale | 8GB | 2 | HDD 1TB passthrough | ZFS + NFS |
+
+## Stack desplegado
+- **Virtualizacion**: Proxmox VE en ambos nodos
+- **Orquestacion**: K3s (1 master + 2 workers)
+- **Almacenamiento**: TrueNAS Scale con ZFS, exportado via NFS, provisionador nfs-client en K8s
+- **GitOps**: ArgoCD (namespace argocd, expuesto con NodePort)
+- **Apps desplegadas**: Nginx Proxy Manager (namespace networking), Heimdall
+- **IaC**: Terraform (directorio terraform/, provider bpg/proxmox para Proxmox)
+- **Repo**: https://github.com/sergio-nunez-salas/homelab (publico)
+
+## Estructura del repo
+```
+homelab/
+├── apps/nginx-proxy-manager/deployment.yaml
+├── secrets/sealed-github-token.yaml
+├── terraform/ (main.tf, variables.tf, vms-k3s.tf, vm-truenas.tf, outputs.tf, terraform.tfvars.example)
+├── .gitignore
+└── README.md
+```
+
+## Estado actual y pendientes
+- Terraform: ficheros creados, pendiente de probar con Proxmox encendido
+- Ansible: pendiente de crear (playbooks para instalar K3s automaticamente)
+- CI/CD: pendiente (GitHub Actions para lint y validacion)
+- Monitoring: pendiente (Prometheus + Grafana)
+- Proximos servicios: Cloudflare Tunnel, Nextcloud, Jellyfin, Pi-hole
+
+## Nivel del usuario
+Novato en Terraform, Ansible, CI/CD. Experiencia basica con Kubernetes, Docker, Linux CLI, Proxmox. Usar siempre enfoque didactico: explicar conceptos, comentar el codigo en espanol, no asumir conocimientos previos.
+
+## Convenios del proyecto
+- Idioma de comunicacion: espanol
+- Comentarios en codigo: espanol
+- Commits en espanol
+- Shell del usuario: PowerShell (Windows), SSH a las VMs con Tabby
+- Workspace local: c:\Users\sergi\Desktop\Workspace\homelab
