@@ -1,0 +1,51 @@
+# =============================================================================
+# .gitignore - Ficheros que Git NO debe subir al repositorio
+# =============================================================================
+
+# --- Terraform ---
+# terraform.tfvars contiene TUS credenciales reales (API tokens, passwords).
+# NUNCA debe subirse a Git. Usa terraform.tfvars.example como plantilla.
+terraform/terraform.tfvars
+
+# terraform.tfstate contiene el estado actual de tu infraestructura.
+# Incluye datos sensibles (IPs, IDs de disco, etc.).
+# En un equipo profesional se guarda en un backend remoto (S3, Consul),
+# pero en homelab basta con no subirlo a Git.
+terraform/*.tfstate
+terraform/*.tfstate.backup
+
+# .terraform/ es la carpeta donde Terraform descarga los providers.
+# Es como node_modules en JavaScript: se regenera con "terraform init".
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+
+# Ficheros de crash de Terraform
+terraform/crash.log
+terraform/crash.*.log
+
+# Ficheros de override (configuracion local que no debe compartirse)
+terraform/override.tf
+terraform/override.tf.json
+terraform/*_override.tf
+terraform/*_override.tf.json
+
+# Variables de entorno locales
+.env
+.env.local
+
+# --- Sistema operativo ---
+# Windows
+Thumbs.db
+desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# --- IDEs ---
+.vscode/
+.idea/
+*.swp
+*.swo
