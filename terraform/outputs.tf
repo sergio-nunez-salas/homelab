@@ -62,7 +62,7 @@ output "truenas_vmid" {
 
 output "cluster_summary" {
   description = "Resumen del cluster K3s"
-  value = <<-EOT
+  value       = <<-EOT
 
     ╔══════════════════════════════════════════════════════╗
     ║           CLUSTER K3s - HOMELAB                     ║

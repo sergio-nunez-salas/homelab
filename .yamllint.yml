@@ -1,0 +1,20 @@
+---
+extends: default
+
+rules:
+  # Permitir lineas de hasta 150 caracteres (el default es 80, muy corto)
+  line-length:
+    max: 150
+
+  # No quejarse por valores como "on" (GitHub Actions usa "on:" como trigger
+  # y yamllint lo interpreta como booleano true, que es un falso positivo)
+  truthy:
+    check-keys: false
+    allowed-values: ["true", "false"]
+
+  # Permitir comentarios sin espacio despues del # (comun en scripts)
+  comments:
+    min-spaces-from-content: 1
+
+  # No exigir "---" al inicio de cada fichero YAML
+  document-start: disable
