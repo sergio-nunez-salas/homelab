@@ -65,6 +65,7 @@ Repositorio que documenta y gestiona la infraestructura de mi homelab: un cluste
 | GitOps | ArgoCD | Despliegue declarativo desde este repositorio |
 | Reverse proxy | Nginx Proxy Manager | Proxy inverso con UI web |
 | IaC | Terraform | Definicion de toda la infra de VMs como codigo |
+| CI/CD | GitHub Actions | Validacion automatica en cada push (YAML, K8s, Terraform) |
 | Dashboard | Heimdall | Panel de acceso a servicios |
 
 ---
@@ -73,6 +74,8 @@ Repositorio que documenta y gestiona la infraestructura de mi homelab: un cluste
 
 ```
 homelab/
+├── .github/workflows/
+│   └── ci.yaml                             # Pipeline CI: lint YAML, validar K8s y Terraform
 ├── apps/                                   # Aplicaciones desplegadas via ArgoCD
 │   └── nginx-proxy-manager/
 │       └── deployment.yaml                 # Namespace, PVCs, Deployment, Service
@@ -87,6 +90,7 @@ homelab/
 │   ├── outputs.tf                          # IPs y resumen post-despliegue
 │   └── README.md                           # Guia didactica de Terraform
 ├── .gitignore
+├── .yamllint.yml                           # Configuracion de yamllint para el CI
 └── README.md                               # Este fichero
 ```
 
@@ -118,6 +122,13 @@ homelab/
 - [x] Variables parametrizadas (RAM, cores, IPs, GPU, HDD passthrough)
 - [x] Plantilla de configuracion sin secretos (`terraform.tfvars.example`)
 - [x] Documentacion didactica incluida
+
+### CI/CD
+
+- [x] Pipeline GitHub Actions con 3 validaciones automaticas
+- [x] Lint YAML con yamllint (ficheros de apps y workflows)
+- [x] Validacion de manifiestos Kubernetes con kubeconform
+- [x] Comprobacion de formato Terraform con terraform fmt
 
 ---
 
@@ -199,6 +210,13 @@ Toda la infraestructura de VMs definida en `terraform/` como codigo:
 - GPU passthrough y HDD passthrough configurables
 - Guia paso a paso en `terraform/README.md`
 
+### 9. Pipeline CI/CD (GitHub Actions)
+
+Workflow automatico en `.github/workflows/ci.yaml` que se ejecuta en cada push a `main`:
+- **Lint YAML**: valida sintaxis YAML de los manifiestos y workflows con `yamllint`
+- **Validar K8s**: comprueba que los manifiestos de `apps/` sean recursos Kubernetes validos con `kubeconform`
+- **Validar Terraform**: verifica el formato del codigo Terraform con `terraform fmt -check`
+
 ---
 
 ## Acceso a servicios
@@ -214,7 +232,7 @@ Toda la infraestructura de VMs definida en `terraform/` como codigo:
 ## Proximos pasos
 
 - [ ] Cloudflare Tunnel para exponer servicios a internet
-- [ ] Pipeline CI/CD con GitHub Actions (lint YAML + validacion manifests)
+- [x] Pipeline CI/CD con GitHub Actions (lint YAML + validacion manifests + formato Terraform)
 - [ ] Monitoring: Prometheus + Grafana
 - [ ] Desplegar Nextcloud, Jellyfin (con GPU), Pi-hole
 - [ ] Ansible para provisioning post-VM (instalacion automatica de K3s)
