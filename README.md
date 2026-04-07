@@ -233,6 +233,7 @@ Workflow automatico en `.github/workflows/ci.yaml` que se ejecuta en cada push a
 
 - [ ] Cloudflare Tunnel para exponer servicios a internet
 - [x] Pipeline CI/CD con GitHub Actions (lint YAML + validacion manifests + formato Terraform)
+- [x] Branch protection en main (requiere PR + CI verde para mergear)
 - [ ] Monitoring: Prometheus + Grafana
 - [ ] Desplegar Nextcloud, Jellyfin (con GPU), Pi-hole
 - [ ] Ansible para provisioning post-VM (instalacion automatica de K3s)
