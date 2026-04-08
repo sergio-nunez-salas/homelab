@@ -60,4 +60,5 @@ jobs:
         run: pip install ansible-lint
 
       - name: Validar playbooks y roles
-        run: ansible-lint ansible/
+        run: ansible-lint
+        working-directory: ansible
