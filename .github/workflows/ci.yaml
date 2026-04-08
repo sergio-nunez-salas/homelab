@@ -62,4 +62,3 @@ jobs:
       - name: Validar playbooks y roles
         run: ansible-lint
         working-directory: ansible
-
