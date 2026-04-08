@@ -1,0 +1,40 @@
+---
+# =============================================================================
+# site.yml - Playbook principal: despliega el cluster K3s completo
+# =============================================================================
+#
+# Este es el playbook "maestro". Ejecuta todo en el orden correcto:
+#   1. Preparar TODAS las VMs (rol common)
+#   2. Instalar K3s server en el master
+#   3. Instalar K3s agent en los workers (usando el token del master)
+#
+# Uso:
+#   cd ansible/
+#   ansible-playbook playbooks/site.yml
+#
+# =============================================================================
+
+# --- Fase 1: Preparacion comun de todas las VMs ---
+# Se ejecuta en el grupo "k3s_cluster" (master + workers).
+# Actualiza paquetes, instala dependencias, desactiva swap, etc.
+- name: Preparar todas las VMs del cluster
+  hosts: k3s_cluster
+  roles:
+    - common
+
+# --- Fase 2: Instalar K3s en el master ---
+# Se ejecuta SOLO en el grupo "master".
+# Instala K3s server y guarda el token de union.
+# IMPORTANTE: debe ir ANTES que los workers porque genera el token.
+- name: Instalar K3s server en el master
+  hosts: master
+  roles:
+    - k3s_master
+
+# --- Fase 3: Unir los workers al cluster ---
+# Se ejecuta SOLO en el grupo "workers".
+# Usa el token del master para instalar K3s agent y unirse al cluster.
+- name: Unir workers al cluster K3s
+  hosts: workers
+  roles:
+    - k3s_worker

@@ -1,0 +1,69 @@
+---
+# =============================================================================
+# k3s_master/tasks/main.yml - Instalar K3s en modo server (control plane)
+# =============================================================================
+# Este rol se ejecuta SOLO en el nodo master.
+# Instala K3s como servidor y guarda el token para que los workers se unan.
+# =============================================================================
+
+# --- 1. Descargar el script de instalacion de K3s ---
+# Usamos get_url (modulo nativo de Ansible) en vez de curl.
+# Descarga el script oficial de K3s a un fichero temporal.
+- name: Comprobar si K3s ya esta instalado
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: k3s_master_binary
+
+- name: Descargar script de instalacion de K3s
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s-install.sh
+    mode: "0755"
+  when: not k3s_master_binary.stat.exists
+
+# --- 2. Ejecutar el script en modo server ---
+# Es el equivalente a:
+#   curl -sfL https://get.k3s.io | sh -s - server --cluster-init
+# Pero separado en descarga + ejecucion (mejor practica en Ansible).
+#
+# Flags:
+#   --cluster-init: inicializa el cluster (necesario para el primer master)
+#   --tls-san: anade la IP del master al certificado TLS (para conectarte
+#              desde fuera con kubectl sin errores de certificado)
+#   --write-kubeconfig-mode 644: permite leer el kubeconfig sin ser root
+- name: Instalar K3s server
+  ansible.builtin.command:
+    cmd: /tmp/k3s-install.sh
+    creates: /usr/local/bin/k3s
+  environment:
+    INSTALL_K3S_EXEC: "server --cluster-init --tls-san {{ ansible_host }} --write-kubeconfig-mode 644"
+  notify: Reiniciar K3s
+
+# --- 3. Esperar a que K3s este listo ---
+# K3s tarda unos segundos en arrancar. Esperamos hasta que el servicio
+# este activo antes de continuar (si no, las siguientes tareas fallarian).
+- name: Esperar a que K3s server este listo
+  ansible.builtin.systemd:
+    name: k3s
+    state: started
+    enabled: true
+
+# --- 4. Leer el token de union ---
+# K3s genera un token secreto en este fichero.
+# Los workers necesitan este token para unirse al cluster.
+# Lo leemos y lo guardamos en una variable de Ansible
+# para pasarselo a los workers en el siguiente rol.
+#
+# Las variables usan el prefijo "k3s_master_" porque ansible-lint
+# exige que las variables de un rol lleven el nombre del rol como prefijo.
+- name: Leer token de union del cluster
+  ansible.builtin.slurp:
+    src: /var/lib/rancher/k3s/server/node-token
+  register: k3s_master_token_raw
+
+# "slurp" devuelve el contenido en base64, asi que lo decodificamos
+# y lo guardamos como un "fact" (variable global de Ansible).
+# El rol k3s_worker accede a el con: hostvars['k3s-master']['k3s_master_token']
+- name: Guardar token como variable
+  ansible.builtin.set_fact:
+    k3s_master_token: "{{ k3s_master_token_raw.content | b64decode | trim }}"

@@ -1,0 +1,10 @@
+---
+# =============================================================================
+# k3s_worker/handlers/main.yml - Handlers de los workers
+# =============================================================================
+
+- name: Reiniciar K3s agent
+  ansible.builtin.systemd:
+    name: k3s-agent
+    state: restarted
+    daemon_reload: true

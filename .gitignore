@@ -44,6 +44,11 @@ desktop.ini
 # Linux
 *~
 
+# --- Ansible ---
+# Ficheros .retry que genera Ansible cuando un playbook falla
+ansible/*.retry
+ansible/**/*.retry
+
 # --- IDEs ---
 .vscode/
 .idea/

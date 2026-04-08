@@ -48,3 +48,17 @@ jobs:
       - name: Comprobar formato
         run: terraform fmt -check -recursive
         working-directory: terraform
+
+  lint-ansible:
+    name: Lint Ansible
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar ansible-lint
+        run: pip install ansible-lint
+
+      - name: Validar playbooks y roles
+        run: ansible-lint
+        working-directory: ansible

@@ -16,6 +16,9 @@ rules:
   comments:
     min-spaces-from-content: 1
 
+  # ansible-lint requiere que comments-indentation este desactivado
+  comments-indentation: false
+
   # No exigir "---" al inicio de cada fichero YAML
   document-start: disable
 
@@ -25,3 +28,12 @@ rules:
   # El primer estilo es el estandar en manifiestos de Kubernetes.
   indentation:
     indent-sequences: whatever
+
+  # ansible-lint requiere max 1 espacio dentro de braces
+  braces:
+    max-spaces-inside: 1
+
+  # ansible-lint requiere que se prohiban valores octales implicitos y explicitos
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
