@@ -18,7 +18,7 @@
 # --- Conexion a Proxmox ---
 # La URL es la misma que usas en el navegador para entrar a Proxmox.
 # El token se crea en: Proxmox > Datacenter > Permissions > API Tokens.
-proxmox_url       = "https://192.168.1.100:8006"
+proxmox_url       = "https://192.168.68.100:8006"
 proxmox_api_token = "root@pam!terraform=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # --- Nombres de tus nodos Proxmox ---
@@ -29,7 +29,7 @@ proxmox_node_secondary = "pve-chuwi"
 # --- Almacenamiento y red ---
 storage_pool    = "local-lvm"
 network_bridge  = "vmbr0"
-network_gateway = "192.168.1.1"
+network_gateway = "192.168.68.1"
 network_dns     = "8.8.8.8"
 
 # --- VM: MASTER (K3s control plane) ---
@@ -38,7 +38,7 @@ master_name      = "k3s-master"
 master_cores     = 4
 master_memory    = 4096
 master_disk_size = 32
-master_ip        = "192.168.1.50/24"
+master_ip        = "192.168.68.60/24"
 
 # --- VM: WORKER1 / IALAB (K3s worker con GPU) ---
 worker1_vmid      = 101
@@ -46,7 +46,7 @@ worker1_name      = "k3s-worker1-ialab"
 worker1_cores     = 4
 worker1_memory    = 8192
 worker1_disk_size = 64
-worker1_ip        = "192.168.1.51/24"
+worker1_ip        = "192.168.68.76/24"
 # ID PCI de la GPU. Ejecuta "lspci | grep -i nvidia" en el nodo Proxmox
 # para ver el ID exacto (ej: "01:00" o "0000:01:00").
 # Dejalo vacio "" si no quieres GPU passthrough.
@@ -58,7 +58,7 @@ worker2_name      = "k3s-worker2"
 worker2_cores     = 2
 worker2_memory    = 2048
 worker2_disk_size = 20
-worker2_ip        = "192.168.1.52/24"
+worker2_ip        = "192.168.68.82/24"
 
 # --- VM: TRUENAS (almacenamiento ZFS + NFS) ---
 truenas_vmid      = 200
@@ -66,7 +66,7 @@ truenas_name      = "truenas"
 truenas_cores     = 2
 truenas_memory    = 8192
 truenas_disk_size = 32
-truenas_ip        = "192.168.1.60/24"
+truenas_ip        = "192.168.68.90/24"
 # ID del HDD para passthrough. Ejecuta en Proxmox:
 #   ls -l /dev/disk/by-id/ | grep -v part
 # Copia la linea del disco de 1TB (ej: "ata-WDC_WD10EZEX-00BN5A0_WD-xxx").
