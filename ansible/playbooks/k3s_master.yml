@@ -1,0 +1,20 @@
+---
+# =============================================================================
+# k3s-master.yml - Solo instalar/configurar el master
+# =============================================================================
+# Util si necesitas reinstalar o reconfigurar solo el master
+# sin tocar los workers.
+#
+# Uso:
+#   ansible-playbook playbooks/k3s-master.yml
+# =============================================================================
+
+- name: Preparar el master
+  hosts: master
+  roles:
+    - common
+
+- name: Instalar K3s server
+  hosts: master
+  roles:
+    - k3s_master

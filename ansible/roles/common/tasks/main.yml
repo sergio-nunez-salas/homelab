@@ -1,0 +1,94 @@
+---
+# =============================================================================
+# common/tasks/main.yml - Preparacion base de las VMs para K3s
+# =============================================================================
+# Este rol se ejecuta en TODAS las VMs del cluster (master + workers).
+# Deja el sistema operativo listo para instalar K3s.
+# =============================================================================
+
+# --- 1. Actualizar la lista de paquetes del SO ---
+# Equivale a ejecutar "sudo apt update" por SSH.
+# "cache_valid_time: 3600" = no volver a actualizar si ya se hizo hace menos de 1 hora.
+- name: Actualizar cache de paquetes
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+# --- 2. Instalar paquetes basicos ---
+# Herramientas que K3s o nosotros necesitamos en las VMs.
+# - curl: para descargar el script de instalacion de K3s
+# - apt-transport-https: permite apt usar repos HTTPS
+# - ca-certificates: certificados SSL (para conexiones seguras)
+# - gnupg: manejo de claves GPG (para repos firmados)
+# - open-iscsi: necesario si usas almacenamiento iSCSI con Longhorn (futuro)
+# - nfs-common: cliente NFS para montar los volumenes de TrueNAS
+- name: Instalar paquetes necesarios
+  ansible.builtin.apt:
+    name:
+      - curl
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - open-iscsi
+      - nfs-common
+    state: present
+
+# --- 3. Desactivar swap ---
+# Kubernetes NO funciona bien con swap activado.
+# La swap es espacio en disco que Linux usa como "RAM de emergencia".
+# K8s necesita controlar la memoria exacta de cada pod, y la swap interfiere.
+#
+# Este comando desactiva la swap inmediatamente (no sobrevive a un reboot).
+- name: Desactivar swap (inmediato)
+  ansible.builtin.command: swapoff -a
+  changed_when: false
+
+# Para que la swap NO se reactive al reiniciar, hay que comentar
+# la linea de swap en /etc/fstab (fichero que monta discos al arrancar).
+- name: Desactivar swap (permanente en /etc/fstab)
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\sswap\s)'
+    replace: '# \1'
+
+# --- 4. Cargar modulos del kernel ---
+# K3s necesita estos modulos del kernel de Linux para funcionar:
+# - overlay: sistema de ficheros en capas (usado por containerd para imagenes)
+# - br_netfilter: permite que iptables filtre trafico de bridges de red
+#
+# Primero los cargamos ahora (para no tener que reiniciar).
+- name: Cargar modulos del kernel necesarios (inmediato)
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - overlay
+    - br_netfilter
+
+# Luego los dejamos en un fichero para que se carguen automaticamente
+# en cada reinicio de la VM.
+- name: Hacer modulos persistentes (se cargan al arrancar)
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k3s.conf
+    content: |
+      overlay
+      br_netfilter
+    mode: "0644"
+
+# --- 5. Parametros de red (sysctl) ---
+# Kubernetes necesita que el kernel reenvie paquetes entre interfaces de red.
+# Sin esto, los pods no pueden comunicarse entre nodos.
+#
+# - net.bridge.bridge-nf-call-iptables: el trafico de bridges pasa por iptables
+# - net.bridge.bridge-nf-call-ip6tables: lo mismo para IPv6
+# - net.ipv4.ip_forward: permite reenviar paquetes entre interfaces (routing)
+- name: Configurar parametros de red para Kubernetes
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/k3s.conf
+    reload: true
+  loop:
+    - { key: "net.bridge.bridge-nf-call-iptables", value: "1" }
+    - { key: "net.bridge.bridge-nf-call-ip6tables", value: "1" }
+    - { key: "net.ipv4.ip_forward", value: "1" }

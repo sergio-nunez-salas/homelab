@@ -1,0 +1,20 @@
+---
+# =============================================================================
+# k3s-workers.yml - Solo unir/configurar los workers
+# =============================================================================
+# Util si necesitas anadir un worker nuevo o reinstalar los existentes.
+# REQUISITO: el master debe estar ya funcionando con K3s instalado.
+#
+# Uso:
+#   ansible-playbook playbooks/k3s-workers.yml
+# =============================================================================
+
+- name: Preparar los workers
+  hosts: workers
+  roles:
+    - common
+
+- name: Unir workers al cluster K3s
+  hosts: workers
+  roles:
+    - k3s_worker

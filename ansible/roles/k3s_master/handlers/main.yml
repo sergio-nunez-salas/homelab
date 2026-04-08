@@ -1,0 +1,13 @@
+---
+# =============================================================================
+# k3s_master/handlers/main.yml - Handlers del master
+# =============================================================================
+# Un handler es una tarea que SOLO se ejecuta si otra tarea lo "notifica".
+# En nuestro caso: reiniciar K3s solo si se ha instalado o modificado.
+# =============================================================================
+
+- name: Reiniciar K3s
+  ansible.builtin.systemd:
+    name: k3s
+    state: restarted
+    daemon_reload: true

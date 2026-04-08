@@ -1,0 +1,38 @@
+---
+# =============================================================================
+# k3s_worker/tasks/main.yml - Instalar K3s en modo agent (worker)
+# =============================================================================
+# Este rol se ejecuta SOLO en los nodos worker.
+# Instala K3s como agente y lo une al cluster usando el token del master.
+#
+# REQUISITO: el rol k3s_master debe haberse ejecutado ANTES,
+# porque necesitamos el token que genero el master.
+# =============================================================================
+
+# --- 1. Descargar e instalar K3s en modo agent ---
+# Es el mismo comando que ejecutaste a mano:
+#   curl -sfL https://get.k3s.io | K3S_URL=https://<master>:6443 K3S_TOKEN=<token> sh -
+#
+# La diferencia clave con el master: aqui NO se ejecuta un "server",
+# sino un "agent" que se conecta al master existente.
+#
+# hostvars['k3s-master'] accede a las variables del host "k3s-master"
+# definido en el inventario. De ahi sacamos:
+#   - ansible_host: la IP del master (192.168.68.60)
+#   - k3s_token: el token que guardamos en el rol k3s_master
+- name: Instalar K3s agent
+  ansible.builtin.shell: >
+    curl -sfL https://get.k3s.io | sh -s - agent
+    --server https://{{ hostvars['k3s-master']['ansible_host'] }}:6443
+    --token {{ hostvars['k3s-master']['k3s_token'] }}
+  args:
+    creates: /usr/local/bin/k3s
+  notify: Reiniciar K3s agent
+
+# --- 2. Esperar a que el agente este activo ---
+# El servicio en los workers se llama "k3s-agent" (no "k3s" como en el master).
+- name: Esperar a que K3s agent este listo
+  ansible.builtin.systemd:
+    name: k3s-agent
+    state: started
+    enabled: true

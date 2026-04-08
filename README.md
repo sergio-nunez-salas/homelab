@@ -65,7 +65,8 @@ Repositorio que documenta y gestiona la infraestructura de mi homelab: un cluste
 | GitOps | ArgoCD | Despliegue declarativo desde este repositorio |
 | Reverse proxy | Nginx Proxy Manager | Proxy inverso con UI web |
 | IaC | Terraform | Definicion de toda la infra de VMs como codigo |
-| CI/CD | GitHub Actions | Validacion automatica en cada push (YAML, K8s, Terraform) |
+| Configuracion | Ansible | Instalacion automatica de K3s en las VMs |
+| CI/CD | GitHub Actions | Validacion automatica en cada push (YAML, K8s, Terraform, Ansible) |
 | Dashboard | Heimdall | Panel de acceso a servicios |
 
 ---
@@ -76,6 +77,18 @@ Repositorio que documenta y gestiona la infraestructura de mi homelab: un cluste
 homelab/
 ├── .github/workflows/
 │   └── ci.yaml                             # Pipeline CI: lint YAML, validar K8s y Terraform
+├── ansible/                                # Configuracion automatica de K3s (Ansible)
+│   ├── ansible.cfg                         # Configuracion de Ansible
+│   ├── inventory/hosts.yml                 # IPs de las VMs del cluster
+│   ├── playbooks/                          # Playbooks ejecutables
+│   │   ├── site.yml                        # Desplegar cluster completo
+│   │   ├── k3s-master.yml                  # Solo master
+│   │   └── k3s-workers.yml                 # Solo workers
+│   ├── roles/                              # Roles (tareas agrupadas)
+│   │   ├── common/                         # Preparacion base de las VMs
+│   │   ├── k3s_master/                     # Instalar K3s server
+│   │   └── k3s_worker/                     # Instalar K3s agent
+│   └── README.md                           # Guia didactica de Ansible
 ├── apps/                                   # Aplicaciones desplegadas via ArgoCD
 │   └── nginx-proxy-manager/
 │       └── deployment.yaml                 # Namespace, PVCs, Deployment, Service
@@ -123,12 +136,20 @@ homelab/
 - [x] Plantilla de configuracion sin secretos (`terraform.tfvars.example`)
 - [x] Documentacion didactica incluida
 
+### Configuracion automatica (Ansible)
+
+- [x] Playbooks para instalar K3s automaticamente (master + workers)
+- [x] Roles separados: common (preparacion SO), k3s_master, k3s_worker
+- [x] Inventario con IPs reales de las VMs del cluster
+- [x] Documentacion didactica incluida
+
 ### CI/CD
 
-- [x] Pipeline GitHub Actions con 3 validaciones automaticas
+- [x] Pipeline GitHub Actions con 4 validaciones automaticas
 - [x] Lint YAML con yamllint (ficheros de apps y workflows)
 - [x] Validacion de manifiestos Kubernetes con kubeconform
 - [x] Comprobacion de formato Terraform con terraform fmt
+- [x] Lint de playbooks y roles Ansible con ansible-lint
 
 ---
 
@@ -216,6 +237,15 @@ Workflow automatico en `.github/workflows/ci.yaml` que se ejecuta en cada push a
 - **Lint YAML**: valida sintaxis YAML de los manifiestos y workflows con `yamllint`
 - **Validar K8s**: comprueba que los manifiestos de `apps/` sean recursos Kubernetes validos con `kubeconform`
 - **Validar Terraform**: verifica el formato del codigo Terraform con `terraform fmt -check`
+- **Lint Ansible**: valida playbooks y roles con `ansible-lint`
+
+### 10. Ansible (configuracion automatica de K3s)
+
+Playbooks y roles en `ansible/` para automatizar la instalacion del cluster:
+- Rol `common`: prepara las VMs (actualizaciones, dependencias, swap, kernel, sysctl)
+- Rol `k3s_master`: instala K3s server y guarda el token de union
+- Rol `k3s_worker`: instala K3s agent y une los workers al cluster
+- Guia paso a paso en `ansible/README.md`
 
 ---
 
@@ -236,5 +266,5 @@ Workflow automatico en `.github/workflows/ci.yaml` que se ejecuta en cada push a
 - [x] Branch protection en main (requiere PR + CI verde para mergear)
 - [ ] Monitoring: Prometheus + Grafana
 - [ ] Desplegar Nextcloud, Jellyfin (con GPU), Pi-hole
-- [ ] Ansible para provisioning post-VM (instalacion automatica de K3s)
+- [x] Ansible para provisioning post-VM (instalacion automatica de K3s)
 - [ ] Cluster Proxmox entre los 2 nodos fisicos

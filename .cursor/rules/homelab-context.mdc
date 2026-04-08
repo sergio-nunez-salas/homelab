@@ -27,22 +27,26 @@ Sergio Nunez Salas. Junior en Telefonica Tech (proyecto Thanos, seguridad de red
 - **GitOps**: ArgoCD (namespace argocd, expuesto con NodePort)
 - **Apps desplegadas**: Nginx Proxy Manager (namespace networking), Heimdall
 - **IaC**: Terraform (directorio terraform/, provider bpg/proxmox para Proxmox)
+- **Configuracion**: Ansible (directorio ansible/, playbooks para instalar K3s automaticamente)
+- **CI/CD**: GitHub Actions (lint YAML, validar K8s, formato Terraform, lint Ansible)
 - **Repo**: https://github.com/sergio-nunez-salas/homelab (publico)
 
 ## Estructura del repo
 ```
 homelab/
+├── ansible/ (ansible.cfg, inventory/hosts.yml, playbooks/, roles/common, k3s_master, k3s_worker)
 ├── apps/nginx-proxy-manager/deployment.yaml
 ├── secrets/sealed-github-token.yaml
 ├── terraform/ (main.tf, variables.tf, vms-k3s.tf, vm-truenas.tf, outputs.tf, terraform.tfvars.example)
+├── .github/workflows/ci.yaml
 ├── .gitignore
 └── README.md
 ```
 
 ## Estado actual y pendientes
 - Terraform: ficheros creados, pendiente de probar con Proxmox encendido
-- Ansible: pendiente de crear (playbooks para instalar K3s automaticamente)
-- CI/CD: pendiente (GitHub Actions para lint y validacion)
+- Ansible: ficheros creados (playbooks para instalar K3s en master + workers), pendiente de probar con Proxmox encendido
+- CI/CD: GitHub Actions configurado (lint YAML, validar K8s, formato Terraform, lint Ansible)
 - Monitoring: pendiente (Prometheus + Grafana)
 - Proximos servicios: Cloudflare Tunnel, Nextcloud, Jellyfin, Pi-hole
 
