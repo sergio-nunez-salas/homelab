@@ -58,12 +58,11 @@
 #
 # Primero los cargamos ahora (para no tener que reiniciar).
 - name: Cargar modulos del kernel necesarios (inmediato)
-  community.general.modprobe:
-    name: "{{ item }}"
-    state: present
+  ansible.builtin.command: modprobe {{ item }}
   loop:
     - overlay
     - br_netfilter
+  changed_when: false
 
 # Luego los dejamos en un fichero para que se carguen automaticamente
 # en cada reinicio de la VM.
@@ -82,13 +81,15 @@
 # - net.bridge.bridge-nf-call-iptables: el trafico de bridges pasa por iptables
 # - net.bridge.bridge-nf-call-ip6tables: lo mismo para IPv6
 # - net.ipv4.ip_forward: permite reenviar paquetes entre interfaces (routing)
-- name: Configurar parametros de red para Kubernetes
-  ansible.posix.sysctl:
-    name: "{{ item.key }}"
-    value: "{{ item.value }}"
-    sysctl_file: /etc/sysctl.d/k3s.conf
-    reload: true
-  loop:
-    - {key: "net.bridge.bridge-nf-call-iptables", value: "1"}
-    - {key: "net.bridge.bridge-nf-call-ip6tables", value: "1"}
-    - {key: "net.ipv4.ip_forward", value: "1"}
+- name: Escribir parametros de red para Kubernetes
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/k3s.conf
+    content: |
+      net.bridge.bridge-nf-call-iptables = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.ipv4.ip_forward = 1
+    mode: "0644"
+
+- name: Aplicar parametros de red
+  ansible.builtin.command: sysctl --system
+  changed_when: false

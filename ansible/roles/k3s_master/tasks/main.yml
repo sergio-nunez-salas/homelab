@@ -9,13 +9,17 @@
 # --- 1. Descargar el script de instalacion de K3s ---
 # Usamos get_url (modulo nativo de Ansible) en vez de curl.
 # Descarga el script oficial de K3s a un fichero temporal.
+- name: Comprobar si K3s ya esta instalado
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: k3s_master_binary
+
 - name: Descargar script de instalacion de K3s
   ansible.builtin.get_url:
     url: https://get.k3s.io
     dest: /tmp/k3s-install.sh
     mode: "0755"
-  args:
-    creates: /usr/local/bin/k3s
+  when: not k3s_master_binary.stat.exists
 
 # --- 2. Ejecutar el script en modo server ---
 # Es el equivalente a:

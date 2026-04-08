@@ -11,13 +11,17 @@
 
 # --- 1. Descargar el script de instalacion de K3s ---
 # Misma descarga que en el master, pero luego se ejecuta en modo agent.
+- name: Comprobar si K3s ya esta instalado
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: k3s_worker_binary
+
 - name: Descargar script de instalacion de K3s
   ansible.builtin.get_url:
     url: https://get.k3s.io
     dest: /tmp/k3s-install.sh
     mode: "0755"
-  args:
-    creates: /usr/local/bin/k3s
+  when: not k3s_worker_binary.stat.exists
 
 # --- 2. Ejecutar el script en modo agent ---
 # La diferencia clave con el master: aqui NO se ejecuta un "server",
