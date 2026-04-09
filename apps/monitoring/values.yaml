@@ -37,6 +37,11 @@ grafana:
     type: NodePort
     nodePort: 30300
 
+  # --- Dashboards por defecto ---
+  # Desactivamos los que no aplican a K3s o no vamos a usar.
+  # Los que quedan activos: Node Exporter, Compute Resources, Networking.
+  defaultDashboardsEnabled: true
+
 
 # =============================================================================
 # PROMETHEUS - Recoleccion y almacenamiento de metricas
@@ -107,3 +112,20 @@ nodeExporter:
 # Complementa a node-exporter: este mide K8s, el otro mide el hardware.
 kubeStateMetrics:
   enabled: true
+
+
+# =============================================================================
+# DASHBOARDS - Desactivar los que no aplican a K3s
+# =============================================================================
+# K3s no usa etcd, kube-proxy ni expone metricas del scheduler/controller
+# de la misma forma que un K8s estandar. Estos dashboards estarian vacios.
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+coreDns:
+  enabled: false
