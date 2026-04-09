@@ -1,0 +1,109 @@
+---
+# =============================================================================
+# values.yaml - Configuracion personalizada de kube-prometheus-stack
+# =============================================================================
+#
+# Este fichero sobreescribe los valores por defecto del Helm chart.
+# Solo definimos lo que queremos cambiar. El resto usa los defaults.
+#
+# Chart: kube-prometheus-stack
+# Incluye: Prometheus, Grafana, Alertmanager, node-exporter, kube-state-metrics
+# Docs: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+# =============================================================================
+
+
+# =============================================================================
+# GRAFANA - Dashboards y visualizacion de metricas
+# =============================================================================
+grafana:
+  # --- Acceso al panel web ---
+  # Usuario y password para entrar a Grafana.
+  # En produccion esto iria en un Secret, pero en homelab es suficiente.
+  adminUser: admin
+  adminPassword: changeme
+
+  # --- Almacenamiento persistente ---
+  # Sin esto, Grafana pierde los dashboards personalizados al reiniciar.
+  # Usamos tu StorageClass "nfs-client" (el NFS de TrueNAS).
+  persistence:
+    enabled: true
+    storageClassName: nfs-client
+    size: 5Gi
+
+  # --- Servicio ---
+  # NodePort permite acceder a Grafana desde fuera del cluster
+  # sin necesidad de port-forward. Se accede con http://<IP_NODO>:30300
+  service:
+    type: NodePort
+    nodePort: 30300
+
+
+# =============================================================================
+# PROMETHEUS - Recoleccion y almacenamiento de metricas
+# =============================================================================
+prometheus:
+  prometheusSpec:
+    # --- Almacenamiento persistente ---
+    # Sin esto, Prometheus pierde todas las metricas al reiniciar.
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: nfs-client
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
+
+    # --- Retencion de datos ---
+    # Cuanto tiempo guarda las metricas. 15 dias es suficiente para un homelab.
+    # Mas tiempo = mas espacio en disco.
+    retention: 15d
+
+    # --- Recursos ---
+    # Limitar CPU y RAM para que Prometheus no se coma los recursos
+    # del cluster (especialmente importante en tu worker2 con solo 2GB).
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 250m
+      limits:
+        memory: 1Gi
+        cpu: 500m
+
+
+# =============================================================================
+# ALERTMANAGER - Gestiona y envia alertas
+# =============================================================================
+# Lo dejamos habilitado pero sin configurar destinos de alerta.
+# Mas adelante puedes configurar alertas por email, Telegram, Slack, etc.
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: nfs-client
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 2Gi
+
+
+# =============================================================================
+# NODE-EXPORTER - Metricas del hardware de cada nodo
+# =============================================================================
+# Exporta metricas de CPU, RAM, disco, red de cada VM.
+# Se despliega automaticamente en TODOS los nodos (es un DaemonSet).
+# No necesita configuracion extra.
+nodeExporter:
+  enabled: true
+
+
+# =============================================================================
+# KUBE-STATE-METRICS - Metricas del estado de Kubernetes
+# =============================================================================
+# Exporta metricas sobre pods, deployments, services, etc.
+# Complementa a node-exporter: este mide K8s, el otro mide el hardware.
+kubeStateMetrics:
+  enabled: true

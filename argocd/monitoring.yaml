@@ -1,0 +1,67 @@
+---
+# =============================================================================
+# monitoring.yaml - Application de ArgoCD para Prometheus + Grafana
+# =============================================================================
+#
+# Este fichero le dice a ArgoCD:
+#   "Despliega el Helm chart kube-prometheus-stack con mi configuracion"
+#
+# ArgoCD vigila este fichero y el values.yaml. Si cambias algo,
+# ArgoCD actualiza el despliegue automaticamente (GitOps).
+#
+# TIPO DE RECURSO: Application (CRD de ArgoCD)
+# No es un recurso estandar de Kubernetes, es especifico de ArgoCD.
+# =============================================================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # Nombre de la aplicacion en ArgoCD (lo veras en la UI)
+  name: monitoring
+  # SIEMPRE se crea en el namespace de ArgoCD
+  namespace: argocd
+spec:
+  # --- Proyecto ---
+  # "default" es el proyecto que viene con ArgoCD.
+  # Los proyectos permiten agrupar aplicaciones y limitar permisos (avanzado).
+  project: default
+
+  # --- Origenes (multi-source) ---
+  # Necesitamos DOS origenes:
+  #   1. El Helm chart de internet (prometheus-community)
+  #   2. Tu repo de GitHub (donde esta el values.yaml)
+  #
+  # "$values" es un alias: le dice a ArgoCD "cuando veas $values,
+  # busca en el segundo source (tu repo de GitHub)".
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: "72.6.2"
+      helm:
+        valueFiles:
+          - $values/apps/monitoring/values.yaml
+    - repoURL: https://github.com/sergio-nunez-salas/homelab.git
+      targetRevision: main
+      ref: values
+
+  # --- Destino: donde se despliega en tu cluster ---
+  destination:
+    # "https://kubernetes.default.svc" = el propio cluster donde corre ArgoCD
+    server: https://kubernetes.default.svc
+    # Namespace donde se instalara todo (Prometheus, Grafana, etc.)
+    namespace: monitoring
+
+  # --- Sincronizacion automatica ---
+  syncPolicy:
+    # automated: ArgoCD aplica los cambios automaticamente cuando detecta
+    # diferencias entre el repo y el cluster (sin que tu hagas click).
+    automated:
+      # prune: si eliminas algo del values.yaml, ArgoCD lo borra del cluster
+      prune: true
+      # selfHeal: si alguien cambia algo a mano en el cluster,
+      # ArgoCD lo revierte al estado del repo (el repo manda siempre)
+      selfHeal: true
+
+    # Crear el namespace "monitoring" automaticamente si no existe
+    syncOptions:
+      - CreateNamespace=true

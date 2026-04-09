@@ -64,6 +64,7 @@ Repositorio que documenta y gestiona la infraestructura de mi homelab: un cluste
 | Paquetes K8s | Helm | Gestor de charts para Kubernetes |
 | GitOps | ArgoCD | Despliegue declarativo desde este repositorio |
 | Reverse proxy | Nginx Proxy Manager | Proxy inverso con UI web |
+| Monitoring | Prometheus + Grafana | Metricas del cluster y dashboards (via Helm + ArgoCD) |
 | IaC | Terraform | Definicion de toda la infra de VMs como codigo |
 | Configuracion | Ansible | Instalacion automatica de K3s en las VMs |
 | CI/CD | GitHub Actions | Validacion automatica en cada push (YAML, K8s, Terraform, Ansible) |
@@ -90,8 +91,12 @@ homelab/
 │   │   └── k3s_worker/                     # Instalar K3s agent
 │   └── README.md                           # Guia didactica de Ansible
 ├── apps/                                   # Aplicaciones desplegadas via ArgoCD
+│   ├── monitoring/
+│   │   └── values.yaml                     # Config personalizada de Prometheus + Grafana
 │   └── nginx-proxy-manager/
 │       └── deployment.yaml                 # Namespace, PVCs, Deployment, Service
+├── argocd/                                 # Definiciones de Applications de ArgoCD
+│   └── monitoring.yaml                     # Application: Prometheus + Grafana (Helm)
 ├── secrets/
 │   └── sealed-github-token.yaml            # Token de GitHub cifrado (Sealed Secrets)
 ├── terraform/                              # Infraestructura como codigo (Proxmox)
@@ -142,6 +147,14 @@ homelab/
 - [x] Roles separados: common (preparacion SO), k3s_master, k3s_worker
 - [x] Inventario con IPs reales de las VMs del cluster
 - [x] Documentacion didactica incluida
+
+### Monitoring
+
+- [x] Prometheus + Grafana definidos como Helm chart (kube-prometheus-stack)
+- [x] Application de ArgoCD para despliegue automatico via GitOps
+- [x] Almacenamiento persistente sobre NFS (metricas, dashboards, alertas)
+- [x] Grafana accesible por NodePort (puerto 30300)
+- [x] Node-exporter y kube-state-metrics habilitados
 
 ### CI/CD
 
@@ -247,6 +260,16 @@ Playbooks y roles en `ansible/` para automatizar la instalacion del cluster:
 - Rol `k3s_worker`: instala K3s agent y une los workers al cluster
 - Guia paso a paso en `ansible/README.md`
 
+### 11. Monitoring (Prometheus + Grafana)
+
+Stack de monitoring desplegado via ArgoCD con Helm chart `kube-prometheus-stack`:
+- **Prometheus**: recolecta metricas de los nodos y pods (retencion 15 dias)
+- **Grafana**: dashboards web para visualizar metricas (NodePort 30300)
+- **Alertmanager**: gestor de alertas (configurar destinos mas adelante)
+- **Node-exporter**: metricas de hardware (CPU, RAM, disco) de cada nodo
+- **Kube-state-metrics**: metricas del estado de Kubernetes (pods, deployments)
+- Almacenamiento persistente sobre NFS para no perder datos al reiniciar
+
 ---
 
 ## Acceso a servicios
@@ -255,6 +278,7 @@ Playbooks y roles en `ansible/` para automatizar la instalacion del cluster:
 |----------|-----|-------------|
 | Proxmox VE | `https://<IP_NODO>:8006` | root / password |
 | ArgoCD | `https://<IP_MASTER>:<NodePort>` | admin / (ver comando arriba) |
+| Grafana | `http://<IP_NODO>:30300` | admin / changeme |
 | Nginx Proxy Manager | `http://<IP_MASTER>:8081` (via port-forward) | admin@example.com / changeme |
 
 ---
@@ -264,7 +288,7 @@ Playbooks y roles en `ansible/` para automatizar la instalacion del cluster:
 - [ ] Cloudflare Tunnel para exponer servicios a internet
 - [x] Pipeline CI/CD con GitHub Actions (lint YAML + validacion manifests + formato Terraform)
 - [x] Branch protection en main (requiere PR + CI verde para mergear)
-- [ ] Monitoring: Prometheus + Grafana
+- [x] Monitoring: Prometheus + Grafana
 - [ ] Desplegar Nextcloud, Jellyfin (con GPU), Pi-hole
 - [x] Ansible para provisioning post-VM (instalacion automatica de K3s)
 - [ ] Cluster Proxmox entre los 2 nodos fisicos
