@@ -63,5 +63,10 @@ spec:
       selfHeal: true
 
     # Crear el namespace "monitoring" automaticamente si no existe
+    # ServerSideApply: necesario porque los CRDs de Prometheus son muy grandes
+    # y superan el limite de 262144 bytes de las anotaciones de Kubernetes.
+    # Con Server-Side Apply, Kubernetes gestiona el apply directamente
+    # sin guardar la config en anotaciones.
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
