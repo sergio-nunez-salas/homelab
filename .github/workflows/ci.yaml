@@ -33,7 +33,7 @@ jobs:
           sudo mv kubeconform /usr/local/bin/
 
       - name: Validar manifiestos
-        run: kubeconform -summary apps/
+        run: kubeconform -summary -ignore-filename-pattern 'values\.yaml' apps/
 
   validate-terraform:
     name: Validar Terraform
