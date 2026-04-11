@@ -9,15 +9,15 @@ alwaysApply: true
 Sergio Nunez Salas. Junior en Telefonica Tech (proyecto Thanos, seguridad de red para BBVA). Objetivo: pivotar a Cloud Engineer / DevOps con salario 32-35k. Este homelab es su portfolio tecnico para el CV.
 
 ## Hardware fisico (2 nodos Proxmox)
-- **PC principal**: Intel i5-10400F, 16GB DDR4, NVMe 250GB + HDD 1TB, GTX 1660 Ti, MSI MAG B460M Mortar WiFi
-- **Chuwi N100**: Intel N100, 8GB DDR5, SSD 512GB (nodo secundario, bajo consumo)
+- **PC principal**: Intel i5-10400F, 16GB DDR4, NVMe 250GB + HDD 1TB, GTX 1660 Ti, MSI MAG B460M Mortar WiFi. VMs: K3s master, worker1 (GPU), TrueNAS
+- **Chuwi N100**: Intel N100, 8GB DDR5, SSD 512GB (nodo secundario, bajo consumo). VM: K3s worker2
 
 ## Maquinas virtuales en Proxmox
 | VM | SO | RAM | Cores | Extras | Funcion |
 |----|-----|-----|-------|--------|---------|
 | MASTER | Debian | 4GB | 4 | - | K3s control plane |
 | worker1 (IALAB) | Ubuntu | 8GB | 4 | GPU passthrough GTX 1660 | K3s worker |
-| worker2 | Debian | 2GB | 2 | - | K3s worker ligero |
+| worker2 | Debian | 2GB | 2 | - | K3s worker ligero (Proxmox en Chuwi) |
 | TrueNAS | TrueNAS Scale | 8GB | 2 | HDD 1TB passthrough | ZFS + NFS |
 
 ## Stack desplegado

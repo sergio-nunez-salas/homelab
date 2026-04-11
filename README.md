@@ -14,22 +14,21 @@ Repositorio que documenta y gestiona la infraestructura de mi homelab: un cluste
 │  │  CHUWI N100 (8GB)   │       │  PC i5-10400F (16GB DDR4)   │  │
 │  │  Proxmox VE         │       │  Proxmox VE                 │  │
 │  │                     │       │                              │  │
-│  │  (nodo secundario)  │       │  ┌────────┐ ┌────────────┐  │  │
-│  │                     │       │  │ MASTER │ │ worker1    │  │  │
-│  └─────────────────────┘       │  │ 4C/4GB │ │ (IALAB)   │  │  │
-│                                │  │ Debian │ │ 4C/8GB    │  │  │
-│                                │  │ K3s    │ │ Ubuntu    │  │  │
-│                                │  │ server │ │ K3s agent │  │  │
-│                                │  └────────┘ │ GPU 1660  │  │  │
-│                                │             └────────────┘  │  │
-│                                │  ┌────────┐ ┌────────────┐  │  │
-│                                │  │worker2 │ │  TrueNAS   │  │  │
-│                                │  │ 2C/2GB │ │  8GB RAM   │  │  │
-│                                │  │ Debian │ │  HDD 1TB   │  │  │
-│                                │  │ K3s    │ │  ZFS + NFS │  │  │
-│                                │  │ agent  │ │            │  │  │
-│                                │  └────────┘ └────────────┘  │  │
-│                                └─────────────────────────────┘  │
+│  │  ┌────────┐         │       │  ┌────────┐ ┌────────────┐  │  │
+│  │  │worker2 │         │       │  │ MASTER │ │ worker1    │  │  │
+│  │  │ 2C/2GB │         │       │  │ 4C/4GB │ │ (IALAB)   │  │  │
+│  │  │ Debian │         │       │  │ Debian │ │ 4C/8GB    │  │  │
+│  │  │ K3s    │         │       │  │ K3s    │ │ Ubuntu    │  │  │
+│  │  │ agent  │         │       │  │ server │ │ K3s agent │  │  │
+│  │  └────────┘         │       │  └────────┘ │ GPU 1660  │  │  │
+│  │  (nodo secundario)  │       │             └────────────┘  │  │
+│  │                     │       │  ┌────────────┐             │  │
+│  │                     │       │  │  TrueNAS   │             │  │
+│  │                     │       │  │  8GB RAM   │             │  │
+│  │                     │       │  │  HDD 1TB   │             │  │
+│  │                     │       │  │  ZFS + NFS │             │  │
+│  │                     │       │  └────────────┘             │  │
+│  └─────────────────────┘       └─────────────────────────────┘  │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -39,8 +38,8 @@ Repositorio que documenta y gestiona la infraestructura de mi homelab: un cluste
 
 | Nodo | CPU | RAM | Almacenamiento | GPU | Rol |
 |------|-----|-----|----------------|-----|-----|
-| PC principal | Intel i5-10400F (6C/12T) | 16 GB DDR4 | NVMe 250 GB + HDD 1 TB | GTX 1660 Ti | Proxmox: VMs de K3s + TrueNAS |
-| Chuwi N100 | Intel N100 (4C/4T) | 8 GB DDR5 | SSD 512 GB | Integrada | Proxmox: nodo secundario |
+| PC principal | Intel i5-10400F (6C/12T) | 16 GB DDR4 | NVMe 250 GB + HDD 1 TB | GTX 1660 Ti | Proxmox: master, worker1 (GPU), TrueNAS |
+| Chuwi N100 | Intel N100 (4C/4T) | 8 GB DDR5 | SSD 512 GB | Integrada | Proxmox: worker2 (K3s agent) |
 
 ## Maquinas virtuales
 
@@ -48,7 +47,7 @@ Repositorio que documenta y gestiona la infraestructura de mi homelab: un cluste
 |----|-----|-----|-------|-------|--------|---------|
 | MASTER | Debian | 4 GB | 4 | 32 GB | - | K3s control plane |
 | worker1 (IALAB) | Ubuntu | 8 GB | 4 | 64 GB | GPU passthrough (GTX 1660) | K3s worker (cargas GPU) |
-| worker2 | Debian | 2 GB | 2 | 20 GB | - | K3s worker (cargas ligeras) |
+| worker2 | Debian | 2 GB | 2 | 20 GB | - | K3s worker (cargas ligeras), en Proxmox Chuwi |
 | TrueNAS | TrueNAS Scale | 8 GB | 2 | 32 GB + HDD 1TB | HDD passthrough | Almacenamiento ZFS + NFS |
 
 ---

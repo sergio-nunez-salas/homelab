@@ -182,10 +182,11 @@ resource "proxmox_virtual_environment_vm" "k3s_worker1" {
 # VM: WORKER2 - K3s worker ligero
 # =============================================================================
 # Worker minimalista para cargas ligeras. Menos RAM y cores que worker1.
+# Corre en el nodo secundario (Chuwi N100) para repartir carga respecto al PC principal.
 
 resource "proxmox_virtual_environment_vm" "k3s_worker2" {
   vm_id     = var.worker2_vmid
-  node_name = var.proxmox_node_main
+  node_name = var.proxmox_node_secondary
   name      = var.worker2_name
 
   clone {
