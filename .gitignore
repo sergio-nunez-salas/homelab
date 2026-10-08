@@ -54,3 +54,4 @@ ansible/**/*.retry
 .idea/
 *.swp
 *.swo
+.cursor/
